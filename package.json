@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "cy:open": "cypress open -- config viewportHeight=880 viewportWidth=1280",
+    "cy:open:mobile": "cypress open --config viewportWidth=410 viewportHeight=860",
+    "test": "cypress run -- config viewportHeight=880 viewportWidth=1280",
+    "teste:mobile": "cypress run --config viewportWidth=410 viewportHeight=860"
+  },
+
+  "devDependencies": {
+    "cypress": "^12.3.0"
+  }
+}
