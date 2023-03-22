@@ -1,6 +1,7 @@
 /// <reference types="Cypress" />
 
 describe('Central de Atendimento ao Cliente TAT', () => {
+  const THREE_SECONDS_IN_MS = 3000
   beforeEach(() => {
     cy.visit('./src/index.html')
   })
@@ -11,6 +12,9 @@ describe('Central de Atendimento ao Cliente TAT', () => {
 
   it('Preenche e confirma o formulário com sucesso', () => {
     const longText = 'teste, teste, teste, teste, teste, teste, teste, teste, teste, teste, teste, teste'
+    
+    cy.clock()
+
     cy.get('#firstName').type('Guilherme')
     cy.get('#lastName').type('Pastl')
     cy.get('#email').type('gui@exemplo.com')
@@ -18,9 +22,13 @@ describe('Central de Atendimento ao Cliente TAT', () => {
     cy.get('.button[type="submit"]').click()
     
     cy.get('.success').should('be.visible')
+
+    cy.tick(THREE_SECONDS_IN_MS)
+    cy.get('.success').should('not.be.visible')
   })
 
   it('Exibe mensagem de erro ao submeter o formulário com um email com formatação inválida', () => {
+    cy.clock()
     cy.get('#firstName').type('Guilherme')
     cy.get('#lastName').type('Pastl')
     cy.get('#email').type('guiexemplo.com')
@@ -28,6 +36,20 @@ describe('Central de Atendimento ao Cliente TAT', () => {
     cy.get('.button[type="submit"]').click()
     
     cy.get('.error').should('be.visible')
+
+    cy.tick(THREE_SECONDS_IN_MS)
+    cy.get('.success').should('not.be.visible')
+  })
+
+  it('Envia o formulário com sucesso usando um comando customizado', () => {
+    cy.clock()
+
+    cy.fillMandatoryFieldsAndSumit()
+    
+    cy.get('.success').should('be.visible')
+
+    cy.tick(THREE_SECONDS_IN_MS)
+    cy.get('.success').should('not.be.visible')
   })
 
   it('Marca o tipo de atendimento "Feedback"', () => {
@@ -55,6 +77,7 @@ describe('Central de Atendimento ao Cliente TAT', () => {
   })
 
   it('Exibe mensagem de erro quando o telefone se torna obrigatório mas não é preencido antes do envio do formulário', () => {
+    cy.clock()
     cy.get('#firstName').type('Guilherme')
     cy.get('#lastName').type('Pastl')
     cy.get('#email').type('gui@exemplo.com')
@@ -63,6 +86,9 @@ describe('Central de Atendimento ao Cliente TAT', () => {
     cy.contains('button', 'Enviar').click()
 
     cy.get('.error').should('be.visible')
+
+    cy.tick(THREE_SECONDS_IN_MS)
+    cy.get('.success').should('not.be.visible')
   })
 
   it('Seleciona um arquivo da pasta fixtures', () => {
@@ -92,17 +118,60 @@ describe('Central de Atendimento ao Cliente TAT', () => {
       })
   })
 
+  it('Seleciona um produto (YouTube) por seu texto', () => {
+    cy.get('#product')
+      .select('YouTube')
+      .should('have.value', 'youtube')
+  })
+
+  it('Seleciona um produto (Mentoria) por seu valor (value)', () => {
+    cy.get('#product')
+      .select('mentoria')
+      .should('have.value', 'mentoria')
+  })
+
+  it('Seleciona um produto (Blog) por seu índice', () =>{
+    cy.get('#product')
+      .select(1)
+      .should('have.value', 'blog')
+  })
+
   it('Verifica que a política de privacidade abre em outra aba sem a necessidade de um clique', () => {
     cy.get('#privacy a').should('have.attr', 'target', '_blank')
   })
 
-  it('acessa a página da política de privacidade removendo o target e então clicando no link', () => {
-    cy.get('#privacy a')
-      .invoke('removeAttr', 'target')
-      .click()
-    cy.contains('Talking About Testing').should('be.visible')
+  Cypress._.times(3, () => {
+    it('Acessa a página da política de privacidade removendo o target e então clicando no link', () => {
+      cy.get('#privacy a')
+        .invoke('removeAttr', 'target')
+        .click()
+      cy.contains('Talking About Testing').should('be.visible')
+    })
   })
 
+  it('Exibe e esconde as mensagens de sucesso e erro usando o .invoke', () => {
+    cy.get('.success')
+      .should('not.be.visible')
+      .invoke('show')
+      .should('be.visible')
+      .and('contain', 'Mensagem enviada com sucesso.')
+      .invoke('hide')
+      .should('not.be.visible')
+    cy.get('.error')
+      .should('not.be.visible')
+      .invoke('show')
+      .should('be.visible')
+      .and('contain', 'Valide os campos obrigatórios!')
+      .invoke('hide')
+      .should('not.be.visible')
+  })
 
-  
+  it('Preenche a area de texto usando o comando invoke', () => {
+    const longText = Cypress._.repeat('0123456789', 20)
+
+    cy.get('#open-text-area')
+      .invoke('val', longText)
+      .should('have.value', longText)
+  })
+
 })
