@@ -174,4 +174,14 @@ describe('Central de Atendimento ao Cliente TAT', () => {
       .should('have.value', longText)
   })
 
+  it.only('Exibe o gato escondido e altera o título e subtítulo', () => {
+    cy.get('#cat')
+      .invoke('show')
+      .should('be.visible')
+    cy.get('#title')
+      .invoke('text', 'CAT TAT')
+    cy.get('#subtitle')
+      .invoke('text', 'Eu 💚 gatos!')
+  })
+
 })
